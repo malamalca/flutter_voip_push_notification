@@ -10,13 +10,13 @@ import 'package:flutter/widgets.dart';
 /// [message] contains the notification payload see link below for how to parse this data
 /// https://developer.apple.com/library/archive/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/CreatingtheNotificationPayload.html#//apple_ref/doc/uid/TP40008194-CH10-SW1
 typedef Future<dynamic> MessageHandler(
-    bool isLocal, Map<String, dynamic> notification);
+    bool? isLocal, Map<String, dynamic>? notification);
 
 /// Handler for invalid PushKit tokens
 ///
 /// [invalidToken] is the token that has been invalidated and should be removed from your server
 /// https://stackoverflow.com/questions/46977380/voip-push-under-what-circumstances-does-didinvalidatepushtokenfortype-get-calle#47015401
-typedef Future<dynamic> InvalidTokenHandler(String invalidToken);
+typedef Future<dynamic> InvalidTokenHandler(String? invalidToken);
 
 class NotificationSettings {
   const NotificationSettings({
@@ -25,18 +25,19 @@ class NotificationSettings {
     this.badge = true,
   });
 
+  // ignore: unused_element
   NotificationSettings._fromMap(Map<String, bool> settings)
       : sound = settings['sound'],
         alert = settings['alert'],
         badge = settings['badge'];
 
-  final bool sound;
-  final bool alert;
-  final bool badge;
+  final bool? sound;
+  final bool? alert;
+  final bool? badge;
 
   @visibleForTesting
   Map<String, dynamic> toMap() {
-    return <String, bool>{'sound': sound, 'alert': alert, 'badge': badge};
+    return <String, bool?>{'sound': sound, 'alert': alert, 'badge': badge};
   }
 
   @override
@@ -45,13 +46,12 @@ class NotificationSettings {
 
 class LocalNotification {
   const LocalNotification({
-    this.alertBody,
-    this.alertAction,
+    required this.alertBody,
+    required this.alertAction,
     this.soundName,
     this.category,
     this.userInfo,
-  })  : assert(alertBody != null),
-        assert(alertAction != null);
+  });
 
   /// The message displayed in the notification alert.
   final String alertBody;
@@ -60,13 +60,13 @@ class LocalNotification {
   final String alertAction;
 
   /// The sound played when the notification is fired (optional).
-  final String soundName;
+  final String? soundName;
 
   /// The category of this notification, required for actionable notifications (optional).
-  final String category;
+  final String? category;
 
   /// An optional object containing additional notification data.
-  final Map<String, dynamic> userInfo;
+  final Map<String, dynamic>? userInfo;
 
   @visibleForTesting
   Map<String, dynamic> toMap() {
@@ -95,50 +95,50 @@ class FlutterVoipPushNotification {
           const MethodChannel('com.peerwaya/flutter_voip_push_notification'));
 
   final MethodChannel _channel;
-  String _token;
-  MessageHandler _onMessage;
-  MessageHandler _onResume;
-  InvalidTokenHandler _onInvalidToken;
+  String? _token;
+  MessageHandler? _onMessage;
+  MessageHandler? _onResume;
+  InvalidTokenHandler? _onInvalidToken;
 
-  final StreamController<String> _tokenStreamController =
-      StreamController<String>.broadcast();
+  final StreamController<String?> _tokenStreamController =
+      StreamController<String?>.broadcast();
 
   /// Fires when a new device token is generated.
-  Stream<String> get onTokenRefresh {
+  Stream<String?> get onTokenRefresh {
     return _tokenStreamController.stream;
   }
 
   /// Sets up [MessageHandler] for incoming messages.
   void configure({
-    MessageHandler onMessage,
-    MessageHandler onResume,
-    InvalidTokenHandler onInvalidToken,
+    MessageHandler? onMessage,
+    MessageHandler? onResume,
+    InvalidTokenHandler? onInvalidToken,
   }) {
     _onMessage = onMessage;
     _onResume = onResume;
     _onInvalidToken = onInvalidToken;
-    _channel.setMethodCallHandler(_handleMethod);
+    _channel.setMethodCallHandler(_handleMethod as Future<dynamic> Function(MethodCall)?);
     //_channel.invokeMethod<void>('configure');
   }
 
-  Future<dynamic> _handleMethod(MethodCall call) async {
-    final Map map = call.arguments.cast<String, dynamic>();
+  Future<dynamic>? _handleMethod(MethodCall call) async {
+    final Map? map = call.arguments.cast<String, dynamic>();
     switch (call.method) {
       case "onToken":
-        _token = map["deviceToken"];
+        _token = map!["deviceToken"];
         _tokenStreamController.add(_token);
         return null;
       case "onTokenInvalidated":
-        final String invalidToken = map["deviceToken"];
+        final String? invalidToken = map!["deviceToken"];
         return _onInvalidToken?.call(invalidToken);
       case "onMessage":
-        final bool isLocal = map["local"];
-        final Map<String, dynamic> notification =
+        final bool? isLocal = map!["local"];
+        final Map<String, dynamic>? notification =
             map["notification"].cast<String, dynamic>();
         return _onMessage?.call(isLocal, notification);
       case "onResume":
-        final bool isLocal = map["local"];
-        final Map<String, dynamic> notification =
+        final bool? isLocal = map!["local"];
+        final Map<String, dynamic>? notification =
             map["notification"].cast<String, dynamic>();
         return _onResume?.call(isLocal, notification);
       default:
@@ -147,7 +147,7 @@ class FlutterVoipPushNotification {
   }
 
   /// Returns the locally cached push token
-  Future<String> getToken() async {
+  Future<String?> getToken() async {
     return await _channel.invokeMethod<String>('getToken');
   }
 
@@ -168,5 +168,10 @@ class FlutterVoipPushNotification {
       'presentLocalNotification',
       notification.toMap(),
     );
+  }
+
+  Future<String?> get platformVersion async {
+    final String? version = await _channel.invokeMethod('getPlatformVersion');
+    return version;
   }
 }

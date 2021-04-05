@@ -58,6 +58,13 @@ BOOL RunningInAppExtension(void)
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     NSString *method = call.method;
+
+    if ([@"getPlatformVersion" isEqualToString:method]) {
+        result([@"iOS "
+            stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
+        return;
+     }
+
     if ([@"requestNotificationPermissions" isEqualToString:method]) {
         if (RunningInAppExtension()) {
             result(nil);
