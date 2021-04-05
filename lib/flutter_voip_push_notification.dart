@@ -117,11 +117,11 @@ class FlutterVoipPushNotification {
     _onMessage = onMessage;
     _onResume = onResume;
     _onInvalidToken = onInvalidToken;
-    _channel.setMethodCallHandler(_handleMethod as Future<dynamic> Function(MethodCall)?);
+    _channel.setMethodCallHandler(_handleMethod);
     //_channel.invokeMethod<void>('configure');
   }
 
-  Future<dynamic>? _handleMethod(MethodCall call) async {
+  Future<dynamic> _handleMethod(MethodCall call) async {
     final Map? map = call.arguments.cast<String, dynamic>();
     switch (call.method) {
       case "onToken":
