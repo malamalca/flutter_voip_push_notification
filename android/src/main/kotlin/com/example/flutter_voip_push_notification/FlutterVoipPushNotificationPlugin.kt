@@ -1,22 +1,45 @@
 package com.example.flutter_voip_push_notification
 
-import androidx.annotation.NonNull
-import io.flutter.embedding.android.FlutterActivity
-import io.flutter.embedding.engine.FlutterEngine
+import androidx.annotation.NonNull;
+import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import io.flutter.plugin.common.MethodChannel.MethodCallHandler
+import io.flutter.plugin.common.MethodChannel.Result
+import io.flutter.plugin.common.PluginRegistry.Registrar
 
-class FlutterVoipPushNotificationPlugin: MethodCallHandler {
+/** FlutterCallkitPlugin */
+public class FlutterVoipPushNotificationPlugin: FlutterPlugin, MethodCallHandler {
+  override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+    val channel = MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "flutter_voip_push_notification")
+    channel.setMethodCallHandler(FlutterVoipPushNotificationPlugin());
+  }
 
-  private val CHANNEL = "flutter_voip_push_notification"
-
-  override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
-    super.configureFlutterEngine(flutterEngine)
-    MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
-      if (call.method == "getPlatformVersion") {
-        result.success("Android ${android.os.Build.VERSION.RELEASE}")
-      } else {
-        result.notImplemented()
-      }
+  // This static function is optional and equivalent to onAttachedToEngine. It supports the old
+  // pre-Flutter-1.12 Android projects. You are encouraged to continue supporting
+  // plugin registration via this function while apps migrate to use the new Android APIs
+  // post-flutter-1.12 via https://flutter.dev/go/android-project-migration.
+  //
+  // It is encouraged to share logic between onAttachedToEngine and registerWith to keep
+  // them functionally equivalent. Only one of onAttachedToEngine or registerWith will be called
+  // depending on the user's project. onAttachedToEngine or registerWith must both be defined
+  // in the same class.
+  companion object {
+    @JvmStatic
+    fun registerWith(registrar: Registrar) {
+      val channel = MethodChannel(registrar.messenger(), "flutter_voip_push_notification")
+      channel.setMethodCallHandler(FlutterVoipPushNotificationPlugin())
     }
+  }
+
+  override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+    if (call.method == "getPlatformVersion") {
+      result.success("Android ${android.os.Build.VERSION.RELEASE}")
+    } else {
+      result.error("ERROR_IMPLEMENTATION_NOT_FOUND", "Could'nt find implementation for the method in android code", null);
+    }
+  }
+
+  override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
   }
 }
