@@ -9,14 +9,14 @@ import 'package:flutter/widgets.dart';
 /// or false if its a remote voip push notification
 /// [message] contains the notification payload see link below for how to parse this data
 /// https://developer.apple.com/library/archive/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/CreatingtheNotificationPayload.html#//apple_ref/doc/uid/TP40008194-CH10-SW1
-typedef Future<dynamic> MessageHandler(
+typedef Future<dynamic>? MessageHandler(
     bool? isLocal, Map<String, dynamic>? notification);
 
 /// Handler for invalid PushKit tokens
 ///
 /// [invalidToken] is the token that has been invalidated and should be removed from your server
 /// https://stackoverflow.com/questions/46977380/voip-push-under-what-circumstances-does-didinvalidatepushtokenfortype-get-calle#47015401
-typedef Future<dynamic> InvalidTokenHandler(String? invalidToken);
+typedef Future<dynamic>? InvalidTokenHandler(String? invalidToken);
 
 class NotificationSettings {
   const NotificationSettings({

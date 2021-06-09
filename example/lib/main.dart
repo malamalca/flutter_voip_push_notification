@@ -78,6 +78,7 @@ class _MyAppState extends State<MyApp> {
     String alert = notification["aps"]["alert"];
     return _voipPush.presentLocalNotification(LocalNotification(
       alertBody: "Hello $alert",
+      alertAction: "alert",
     ));
   }
 
